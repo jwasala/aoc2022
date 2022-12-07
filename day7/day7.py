@@ -18,26 +18,6 @@ class Node:
             return sum([node.size for node in self.children])
 
 
-def find_or_create_child_node(
-    parent: Node, name: str, size: int, is_dir: bool
-) -> (Node, bool):
-    lookup_list = [
-        node for node in parent.children if node.name == f"{parent.name}/{name}"
-    ]
-    if lookup_list:
-        return lookup_list[0], False
-    else:
-        new_node = Node(
-            name=f"{parent.name}/{name}",
-            _size=size,
-            children=[],
-            parent=parent,
-            is_dir=is_dir,
-        )
-        parent.children.append(new_node)
-        return new_node, True
-
-
 with open("input.txt") as file:
     root_node = Node(name="", _size=0, children=[], parent=None, is_dir=True)
     current_node = root_node
@@ -52,12 +32,14 @@ with open("input.txt") as file:
 
         if not line.startswith("$") and dir_section:
             line_split = line.split(" ")
-            child, created = find_or_create_child_node(
-                current_node,
-                line_split[1],
-                int(line_split[0]) if line_split[0] != "dir" else 0,
-                line_split[0] == "dir",
+            new_node = Node(
+                name=f"{current_node.name}/{line_split[1]}",
+                _size=int(line_split[0]) if line_split[0] != "dir" else 0,
+                children=[],
+                parent=current_node,
+                is_dir=line_split[0] == "dir",
             )
+            current_node.children.append(new_node)
 
         if line == "$ ls":
             dir_section = True
